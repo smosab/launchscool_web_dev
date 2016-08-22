@@ -1,0 +1,29 @@
+<h1><%= "#{@user.capitalize}'s Profile" %></h1>
+
+<h2>Email:</h2>
+
+  <li>
+   <%= @list[@user.to_sym][:email] %>
+  </li>
+
+<h2>Interests:</h2>
+
+  <li>
+   <%= @list[@user.to_sym][:interests].join(', ') %>
+  </li>
+
+  <div>
+    <p>Other users' profiles:
+      <% @list.keys.each do |user| %>
+      <% if user != @user.to_sym %>
+        <li>
+        <a href="/user_profile/<%= user.to_s %>">
+            <%= user.to_s.capitalize %>
+        </a>
+      </li>
+       <% end %>
+      <% end %>
+
+    </p>
+  </div>
+

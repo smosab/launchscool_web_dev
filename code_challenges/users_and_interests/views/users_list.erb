@@ -1,0 +1,13 @@
+
+    <h2>List of Users:</h2>
+
+    <ul>
+      <% @list.keys.each do |user| %>
+
+      <li style="color:blue">
+        <a href="/user_profile/<%= user.to_s %>">
+         <%= user.to_s.capitalize %>
+        </a>
+      </li>
+      <% end %>
+    </ul>
