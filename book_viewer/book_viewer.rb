@@ -12,7 +12,6 @@ get "/" do
   erb :home
 end
 
-
 get "/chapters/:number" do
   number = params[:number].to_i
   chapter_name = @contents[number - 1]
@@ -37,7 +36,6 @@ helpers do
     text.gsub(term, %(<strong>#{term}</strong>))
   end
 end
-
 
 not_found do
   redirect to('/')
