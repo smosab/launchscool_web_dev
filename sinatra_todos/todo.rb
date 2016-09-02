@@ -2,7 +2,7 @@ require "sinatra"
 require "sinatra/reloader" if development?
 require "sinatra/content_for"
 require "tilt/erubis"
-require 'pry'
+
 
 #configures Sinatra to use sessions
 configure do
@@ -112,7 +112,6 @@ end
 
 #update an existing to do list
 post  "/lists/:id" do
-  # binding.pry
 
   list_name = params[:list_name].strip
   @list_id = params[:id].to_i
