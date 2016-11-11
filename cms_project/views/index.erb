@@ -1,8 +1,13 @@
-<!doctype HTML>
+<!doctype html>
 <html>
+  <head>
+
+  </head>
   <ul>
      <% @files.each do |file| %>
-      <li> <%= file %> </li>
+      <li>
+        <a href = "/<%= file %>"> <%= file %>
+      </li>
     <% end %>
   </ul>
 </html>

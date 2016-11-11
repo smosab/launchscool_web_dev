@@ -7,7 +7,11 @@ get "/" do
   # @entries = data_dir.grep /.txt/
 
   @files = Dir["data/*.txt"].map { |file| File.basename(file) }
-
-
   erb :index
+end
+
+get "/:file" do
+  # binding.pry
+  headers["Content-Type"] = "text/plain"
+  file = File.read("data/#{params[:file]}")
 end
