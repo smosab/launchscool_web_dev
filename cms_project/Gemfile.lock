@@ -2,19 +2,21 @@ GEM
   remote: https://rubygems.org/
   specs:
     backports (3.6.8)
-    coderay (1.1.0)
+    coderay (1.1.1)
     erubis (2.7.0)
     method_source (0.8.2)
+    minitest (5.9.1)
     multi_json (1.12.1)
-    pry (0.10.3)
+    pry (0.10.4)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
-    rack (1.6.4)
+    rack (1.6.5)
     rack-protection (1.5.3)
       rack
     rack-test (0.6.3)
       rack (>= 1.0)
+    redcarpet (3.3.4)
     sinatra (1.4.7)
       rack (~> 1.5)
       rack-protection (~> 1.4)
@@ -34,12 +36,12 @@ PLATFORMS
 
 DEPENDENCIES
   erubis
+  minitest
   pry
-  sinatra (~> 1.4.7)
+  rack-test
+  redcarpet
+  sinatra
   sinatra-contrib
 
-RUBY VERSION
-   ruby 2.2.1p85
-
 BUNDLED WITH
-   1.12.5
+   1.13.6
