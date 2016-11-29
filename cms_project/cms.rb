@@ -4,6 +4,7 @@ require "sinatra/content_for"
 require "pry"
 require "redcarpet"
 
+
 #configures Sinatra to use sessions
 configure do
   enable :sessions
@@ -11,37 +12,47 @@ configure do
   set :erb, :escape_html => true
 end
 
-def render_mardown(text)
-  markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML)
-  markdown.render(text)
+def data_path
+  if ENV["RACK_ENV"] == "test"
+    # "./test/data"
+    File.expand_path("../test/data", __FILE__)
+  else
+    File.expand_path("../data", __FILE__)
+    # "./data"
+  end
 end
 
-def readfile(filename, file)
-  file_type = File.extname(filename)
-  case file_type
+def render_markdown(md_file)
+  markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML)
+  markdown.render(File.read(md_file))
+end
+
+def readfile(path)
+  file_ext = File.extname(path)
+  case file_ext
   when ".txt"
     headers["Content-Type"] = "text/plain"
-    file
+    File.read(path)
   when ".md"
-    render_mardown(file)
+    render_markdown(path)
   end
 end
 
 get "/" do
-  # data_dir = Dir.new("data/")
-  # @entries = data_dir.grep /.txt/
 
-  @files = Dir["data/*.*"].map { |file| File.basename(file) }
+  pattern = File.join(data_path, "*")
+  @files = Dir.glob(pattern).map { |file| File.basename(file) }
 
   erb :index
 end
 
 get "/:file" do
-  filename = params[:file]
 
-  if File.exists?("data/#{filename}")
-    file = File.read("data/#{filename}")
-    readfile(filename, file)
+  filename = params[:file]
+  file_path = File.join(data_path, params[:file])
+
+  if File.exists?(file_path) #("data/#{filename}")
+    readfile(file_path)
   else
     session[:error] = "#{filename} doesn't exist" unless filename == "favicon.ico"
     redirect "/"
@@ -51,20 +62,27 @@ end
 get "/edit/:file" do
   # filename = params[:file]
   # @file = File.read("data/#{filename}")
+  file_path = File.join(data_path, params[:file])
+
+  @content = File.read(file_path)
+
   erb :edit_file
 end
 
 post "/update/:file" do
   filename = params[:file]
-  file = File.read("data/#{filename}")
+  file_path = File.join(data_path, filename)
 
-  if params[:updateText] != file
-    File.open("data/#{filename}", "w+") { |f| f.write(params[:updateText])}
+  file = File.read(file_path)
+
+  if params[:updated_text] != file
+    File.open(file_path, "w+") { |f| f.write(params[:updated_text])}
     session[:update_msg] = "#{filename} has been updated."
   else
     session[:update_msg] = "No changes made to #{filename}"
   end
     redirect "/"
+
 end
 
 

@@ -16,6 +16,7 @@ class CMSTest < Minitest::Test
 
   def test_index
     get "/"
+
     assert_equal 200, last_response.status
     assert_equal "text/html;charset=utf-8", last_response["Content-Type"]
 
@@ -27,6 +28,7 @@ class CMSTest < Minitest::Test
 
   def test_history
     get "/history.txt"
+
     assert_equal 200, last_response.status
     assert_equal "text/plain", last_response["Content-Type"]
 
@@ -62,10 +64,11 @@ class CMSTest < Minitest::Test
   end
 
   def test_update_file
+    post "/update/changes.txt", updated_text: "new content2"
 
-    post "update/changes.txt", updateText: "new content"
 
     assert_equal 302, last_response.status
+    # binding.pry
 
     get last_response["Location"]
 
@@ -73,7 +76,7 @@ class CMSTest < Minitest::Test
 
     get "/changes.txt"
     assert_equal 200, last_response.status
-    assert_includes last_response.body, "new content"
+    assert_includes last_response.body, "new content2"
   end
 
 end
