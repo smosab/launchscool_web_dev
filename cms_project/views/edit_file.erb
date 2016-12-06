@@ -6,7 +6,7 @@
   <h2>Edit content of <%= params[:file] %>:</h2>
 
   <form action="/update/<%= params[:file] %>" name:"updateForm" method="post" >
-    <textarea rows="25" cols="75" name="update_text"><%= @content %></textarea><br>
+    <textarea rows="25" cols="75" name="updated_text"><%= @content %></textarea><br>
     <input type="submit" value="SUBMIT!">
   </form>
 </html>
