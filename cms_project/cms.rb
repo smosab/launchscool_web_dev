@@ -22,21 +22,23 @@ def data_path
   end
 end
 
-def render_markdown(md_file)
+def render_markdown(text)
   markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML)
-  markdown.render(File.read(md_file))
+  markdown.render(text)
 end
 
-def readfile(path)
-  file_ext = File.extname(path)
-  case file_ext
+def load_file_content(path)
+  content = File.read(path)
+
+  case File.extname(path)
   when ".txt"
     headers["Content-Type"] = "text/plain"
-    File.read(path)
+    content
   when ".md"
-    render_markdown(path)
+    erb render_markdown(content)
   end
 end
+
 
 get "/" do
 
@@ -52,9 +54,11 @@ get "/:file" do
   file_path = File.join(data_path, params[:file])
 
   if File.exists?(file_path) #("data/#{filename}")
-    readfile(file_path)
+    load_file_content(file_path)
   else
-    session[:error] = "#{filename} doesn't exist" unless filename == "favicon.ico"
+    session[:error] = "#{filename} doesn't exist"
+    # Add the following code if you do not have the favicon.ico added to the publuc folder:
+    #unless filename == "favicon.ico"
     redirect "/"
   end
 end
@@ -70,6 +74,7 @@ get "/edit/:file" do
 end
 
 post "/update/:file" do
+
   filename = params[:file]
   file_path = File.join(data_path, filename)
 
@@ -83,6 +88,29 @@ post "/update/:file" do
   end
     redirect "/"
 
+end
+
+get "/create/doc" do
+  erb :new_file
+end
+
+
+post "/add/doc" do
+  newfilename = params["docname"]
+
+  if newfilename.size > 0
+
+    file_path = File.join(data_path, newfilename)
+    File.new(file_path, "w+")
+    session[:update_msg] = "#{newfilename} has been created."
+    redirect "/"
+  else
+
+    session[:update_msg] = "A name is required"
+    status 422
+    erb :new_file
+  end
+  # redirect "/"
 end
 
 

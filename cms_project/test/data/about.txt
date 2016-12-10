@@ -1,1 +1,0 @@
-This is a file-based CMS. You can view and edit files all on the cloud.
