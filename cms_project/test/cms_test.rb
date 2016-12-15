@@ -3,10 +3,16 @@ ENV["RACK_ENV"] = "test"
 require "minitest/autorun"
 require "rack/test"
 require "pry"
+require "fileutils"
 
 require_relative "../cms"
 
-require "fileutils"
+class CMSTest < Minitest::Test
+  include Rack::Test::Methods
+
+  def app
+    Sinatra::Application
+  end
 
   def setup
     FileUtils.mkdir_p(data_path)
@@ -22,22 +28,17 @@ require "fileutils"
     end
   end
 
-
-class CMSTest < Minitest::Test
-  include Rack::Test::Methods
-
-  def app
-    Sinatra::Application
+  def session
+    last_request.env["rack.session"]
   end
 
   def test_index
+
     post "/users/validate", username: "admin", password: "secret"
-    get last_response["Location"]
 
     create_document "about.txt"
     create_document "changes.txt"
     create_document "history.txt"
-    # create_document "ruby.md"
 
     get "/"
 
@@ -47,7 +48,6 @@ class CMSTest < Minitest::Test
     assert_includes last_response.body, "about.txt"
     assert_includes last_response.body, "changes.txt"
     assert_includes last_response.body, "history.txt"
-    # assert_includes last_response.body, "ruby.md"
   end
 
   def test_history
@@ -66,14 +66,10 @@ class CMSTest < Minitest::Test
 
     assert_equal 302, last_response.status
 
-    get last_response["Location"]
-
-    assert_equal 200, last_response.status
-
-    assert_includes last_response.body, "notafile.ext doesn't exist"
+    assert_equal "notafile.ext doesn't exist", session[:error]
   end
 
-  def test_md
+  def test_markdown
     create_document "ruby.md", "#Ruby is..."
 
     get "/ruby.md"
@@ -99,11 +95,8 @@ class CMSTest < Minitest::Test
     post "/update/changes.txt", updated_text: "new content"
 
     assert_equal 302, last_response.status
-    # binding.pry
 
-    get last_response["Location"]
-
-    assert_includes last_response.body, "changes.txt has been updated"
+    assert_equal "changes.txt has been updated.", session[:update_msg]
 
     get "/changes.txt"
     assert_equal 200, last_response.status
@@ -124,11 +117,9 @@ class CMSTest < Minitest::Test
 
     assert_equal 302, last_response.status
 
+    assert_equal "anewdoc.txt has been created.", session[:update_msg]
+
     get last_response["Location"]
-
-
-    assert_includes last_response.body, "anewdoc.txt has been created."
-
     assert_includes last_response.body, "<a href = \"/anewdoc.txt\">"
 
   end
@@ -144,15 +135,11 @@ class CMSTest < Minitest::Test
   def test_delete_file
     create_document "test1.txt"
 
-    # get last_response["Location"]
-    # assert_equal 200, last_response.status
-    # assert_includes last_response.body, "anewdoc.txt has been created."
-
     post "/delete/test1.txt"
     assert_equal 302, last_response.status
 
-    get last_response["Location"]
-    assert_includes last_response.body, "test1.txt was deleted."
+    assert_equal "test1.txt was deleted.", session[:update_msg]
+
   end
 
     def test_signin_form
@@ -167,14 +154,17 @@ class CMSTest < Minitest::Test
     post "/users/validate", username: "admin", password: "secret"
     assert_equal 302, last_response.status
 
+    assert_equal "Welcome!", session[:update_msg]
+    assert_equal "admin", session[:username]
+
     get last_response["Location"]
-    assert_includes last_response.body, "Welcome!"
     assert_includes last_response.body, "Signed in as admin"
   end
 
   def test_signin_with_bad_credentials
     post "/users/validate", username: "guest", password: "shhhh"
     assert_equal 302, last_response.status
+    assert_equal nil, session[:username]
 
     get last_response["Location"]
     assert_includes last_response.body, "Invalid Credentials"
@@ -182,9 +172,13 @@ class CMSTest < Minitest::Test
 
 
 def test_signout
-    post "/users/validate", username: "admin", password: "secret"
-    get last_response["Location"]
-    assert_includes last_response.body, "Welcome!"
+    # post "/users/validate", username: "admin", password: "secret"
+    # get last_response["Location"]
+    # assert_includes last_response.body, "Welcome!"
+
+    get "/", {}, {"rack.session" => { username: "admin", signedin: "true" } }
+
+    assert_includes last_response.body, "Signed in as admin"
 
     get "/users/signout"
     get last_response["Location"]
