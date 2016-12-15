@@ -31,6 +31,8 @@ class CMSTest < Minitest::Test
   end
 
   def test_index
+    post "/users/validate", username: "admin", password: "secret"
+    get last_response["Location"]
 
     create_document "about.txt"
     create_document "changes.txt"
@@ -116,6 +118,8 @@ class CMSTest < Minitest::Test
   end
 
   def test_add_file
+    post "/users/validate", username: "admin", password: "secret"
+
     post "/add/doc", docname: "anewdoc.txt"
 
     assert_equal 302, last_response.status
@@ -135,6 +139,58 @@ class CMSTest < Minitest::Test
       assert_equal 422, last_response.status
 
       assert_includes last_response.body, "A name is required"
+  end
+
+  def test_delete_file
+    create_document "test1.txt"
+
+    # get last_response["Location"]
+    # assert_equal 200, last_response.status
+    # assert_includes last_response.body, "anewdoc.txt has been created."
+
+    post "/delete/test1.txt"
+    assert_equal 302, last_response.status
+
+    get last_response["Location"]
+    assert_includes last_response.body, "test1.txt was deleted."
+  end
+
+    def test_signin_form
+    get "/users/signin"
+
+    assert_equal 200, last_response.status
+    assert_includes last_response.body, "<input"
+    assert_includes last_response.body, %q(<input type="submit")
+  end
+
+  def test_signin
+    post "/users/validate", username: "admin", password: "secret"
+    assert_equal 302, last_response.status
+
+    get last_response["Location"]
+    assert_includes last_response.body, "Welcome!"
+    assert_includes last_response.body, "Signed in as admin"
+  end
+
+  def test_signin_with_bad_credentials
+    post "/users/validate", username: "guest", password: "shhhh"
+    assert_equal 302, last_response.status
+
+    get last_response["Location"]
+    assert_includes last_response.body, "Invalid Credentials"
+  end
+
+
+def test_signout
+    post "/users/validate", username: "admin", password: "secret"
+    get last_response["Location"]
+    assert_includes last_response.body, "Welcome!"
+
+    get "/users/signout"
+    get last_response["Location"]
+
+    assert_includes last_response.body, "You have been signed out."
+    assert_includes last_response.body, "Sign In"
   end
 
 end
