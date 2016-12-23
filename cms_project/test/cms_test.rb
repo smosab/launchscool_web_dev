@@ -32,8 +32,11 @@ class CMSTest < Minitest::Test
     last_request.env["rack.session"]
   end
 
-  def test_index
+  def admin_session
+    { "rack.session" => { username: "admin" } }
+  end
 
+  def test_index
     post "/users/validate", username: "admin", password: "secret"
 
     create_document "about.txt"
@@ -186,6 +189,12 @@ def test_signout
     assert_includes last_response.body, "You have been signed out."
     assert_includes last_response.body, "Sign In"
   end
+
+  # def test_editing_document
+  #   get "/changes.txt/edit", {}, admin_session
+
+  #   assert_equal 200, last_response.status
+  # end
 
 end
 
