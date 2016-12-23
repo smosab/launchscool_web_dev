@@ -44,8 +44,6 @@ end
 
 
 get "/" do
-
-
   pattern = File.join(data_path, "*")
   @files = Dir.glob(pattern).map { |file| File.basename(file) }
 
@@ -68,13 +66,17 @@ get "/:file" do
 end
 
 get "/edit/:file" do
-  # filename = params[:file]
-  # @file = File.read("data/#{filename}")
-  file_path = File.join(data_path, params[:file])
 
-  @content = File.read(file_path)
+  if session[:signedin] != "true"
+    session[:update_msg] = "You must be signed in to do that."
+    redirect "/"
+  else
+    file_path = File.join(data_path, params[:file])
 
-  erb :edit_file
+    @content = File.read(file_path)
+
+    erb :edit_file
+  end
 end
 
 post "/update/:file" do
@@ -95,11 +97,17 @@ post "/update/:file" do
 end
 
 get "/create/doc" do
-  erb :new_file
+  if session[:signedin] != "true"
+    session[:update_msg] = "You must be signed in to do that."
+    redirect "/"
+  else
+    erb :new_file
+  end
 end
 
 
 post "/add/doc" do
+
   newfilename = params["docname"]
 
   if newfilename.size > 0
@@ -117,11 +125,16 @@ post "/add/doc" do
 end
 
 post "/delete/:file" do
-  filename = params["file"]
-  file_path = File.join(data_path, filename)
-  File.delete(file_path)
-  session[:update_msg] = "#{filename} was deleted."
-  redirect "/"
+    if session[:signedin] != "true"
+    session[:update_msg] = "You must be signed in to do that."
+    redirect "/"
+  else
+    filename = params["file"]
+    file_path = File.join(data_path, filename)
+    File.delete(file_path)
+    session[:update_msg] = "#{filename} was deleted."
+    redirect "/"
+  end
 end
 
 get "/users/signin/?:username?" do
