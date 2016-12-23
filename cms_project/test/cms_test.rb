@@ -33,7 +33,7 @@ class CMSTest < Minitest::Test
   end
 
   def admin_session
-    { "rack.session" => { username: "admin" } }
+    {"rack.session" => { username: "admin", signedin: "true" } }
   end
 
   def test_index
@@ -83,9 +83,10 @@ class CMSTest < Minitest::Test
   end
 
   def test_edit_file_page
+
     create_document "about.txt"
 
-    get "/edit/about.txt"
+    get "/edit/about.txt", {}, admin_session
 
     assert_equal 200, last_response.status
     assert_includes last_response.body, "<textarea"
@@ -107,7 +108,7 @@ class CMSTest < Minitest::Test
   end
 
   def test_create_doc
-    get "/create/doc"
+    get "/create/doc", {}, admin_session
 
     assert_equal 200, last_response.status
     assert_includes last_response.body, '<form action="/add/doc"'
@@ -138,7 +139,8 @@ class CMSTest < Minitest::Test
   def test_delete_file
     create_document "test1.txt"
 
-    post "/delete/test1.txt"
+    post "/delete/test1.txt", {}, admin_session
+
     assert_equal 302, last_response.status
 
     assert_equal "test1.txt was deleted.", session[:update_msg]
