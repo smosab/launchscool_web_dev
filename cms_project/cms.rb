@@ -4,6 +4,9 @@ require "sinatra/content_for"
 require "pry"
 require "redcarpet"
 
+USERNAME = "admin"
+PASSWORD = "secret"
+
 
 #configures Sinatra to use sessions
 configure do
@@ -41,6 +44,7 @@ end
 
 
 get "/" do
+
 
   pattern = File.join(data_path, "*")
   @files = Dir.glob(pattern).map { |file| File.basename(file) }
@@ -105,12 +109,43 @@ post "/add/doc" do
     session[:update_msg] = "#{newfilename} has been created."
     redirect "/"
   else
-
     session[:update_msg] = "A name is required"
     status 422
     erb :new_file
   end
   # redirect "/"
+end
+
+post "/delete/:file" do
+  filename = params["file"]
+  file_path = File.join(data_path, filename)
+  File.delete(file_path)
+  session[:update_msg] = "#{filename} was deleted."
+  redirect "/"
+end
+
+get "/users/signin/?:username?" do
+  erb :signin
+end
+
+get "/users/signout" do
+  session[:signedin] = "false"
+  session[:update_msg] = "You have been signed out."
+  redirect "/"
+end
+
+post "/users/validate" do
+  @username = params["username"]
+
+  if @username == USERNAME && params["password"] == PASSWORD
+    session[:update_msg] = "Welcome!"
+    session[:signedin] = "true"
+    session[:username] = params["username"]
+    redirect "/"
+  else
+    session[:update_msg] = "Invalid Credentials"
+    redirect "/users/signin/#{@username}"
+  end
 end
 
 

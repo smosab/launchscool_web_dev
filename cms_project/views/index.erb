@@ -1,13 +1,22 @@
-
+<% if session["signedin"] == "true" then%>
   <ul>
      <% @files.each do |file| %>
 
       <li>
         <a href = "/<%= file %>"> <%= file %>
         <a href = "/edit/<%= file %>"> - edit
+        <form class="inline" method="post" action="/delete/<%= file %>">
+          <button type="submit">delete</button>
+        </form>
       </li>
 
     <% end %>
   </ul>
 
-  <a href = "/create/doc"> New Document
+  <a href = "/create/doc"> New Document </a>
+  <p class="user-status"> <%= "Signed in as #{session["username"]}" %>
+  <button style=""><a href="/users/signout"> Sign Out</button>
+  </p>
+<% else %>
+  <button><a href="/users/signin"> Sign In</button>
+<% end %>
