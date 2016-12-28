@@ -3,9 +3,12 @@ require "sinatra/reloader" if development?
 require "sinatra/content_for"
 require "pry"
 require "redcarpet"
+require 'yaml'
+require 'bcrypt'
 
-USERNAME = "admin"
-PASSWORD = "secret"
+
+# USERNAME = "admin"
+# PASSWORD = "secret"
 
 
 #configures Sinatra to use sessions
@@ -42,6 +45,26 @@ def load_file_content(path)
   end
 end
 
+def load_user_credentials
+  credentials_path = if ENV["RACK_ENV"] == "test"
+    # "./test/data"
+    File.expand_path("../test/users.yml", __FILE__)
+  else
+    File.expand_path("../data/users.yml", __FILE__)
+    # "./data"
+  end
+  YAML.load_file(credentials_path)
+end
+
+def valid_credentials?(username, password)
+  credentials = load_user_credentials
+  if credentials.key?(username)
+    bcrypt_password = BCrypt::Password.new(credentials[username])
+    bcrypt_password == password
+  else
+    false
+  end
+end
 
 get "/" do
   pattern = File.join(data_path, "*")
@@ -148,16 +171,17 @@ get "/users/signout" do
 end
 
 post "/users/validate" do
-  @username = params["username"]
 
-  if @username == USERNAME && params["password"] == PASSWORD
+  username = params[:username]
+
+  if valid_credentials?(username, params[:password])
     session[:update_msg] = "Welcome!"
     session[:signedin] = "true"
     session[:username] = params["username"]
     redirect "/"
   else
     session[:update_msg] = "Invalid Credentials"
-    redirect "/users/signin/#{@username}"
+    redirect "/users/signin/#{username}"
   end
 end
 
