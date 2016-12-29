@@ -50,7 +50,7 @@ def load_user_credentials
     # "./test/data"
     File.expand_path("../test/users.yml", __FILE__)
   else
-    File.expand_path("../data/users.yml", __FILE__)
+    File.expand_path("../users.yml", __FILE__)
     # "./data"
   end
   YAML.load_file(credentials_path)
@@ -74,9 +74,11 @@ get "/" do
 end
 
 get "/:file" do
+# get "/view" do
 
-  filename = params[:file]
-  file_path = File.join(data_path, params[:file])
+  filename = File.basename(params[:file])
+  file_path = File.join(data_path, filename)
+
 
   if File.exists?(file_path) #("data/#{filename}")
     load_file_content(file_path)
